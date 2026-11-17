@@ -171,14 +171,41 @@ html body #m .oi-del {
 }
 html body #m .op-chips.opf {
   display:grid;
-  grid-template-columns:1fr 1fr;
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:8px;
   margin:12px 0;
+  overflow:visible;
 }
 html body #m .op-chips.opf button {
-  padding:9px 8px;
+  min-width:0;
+  padding:8px 2px;
   text-align:center;
-  white-space:nowrap;
+  white-space:normal;
+  line-height:1.25;
+}
+html body #m .op-chips.opf button span {
+  display:block;
+  font-size:clamp(11px,3.1vw,13px);
+  font-weight:600;
+  opacity:.8;
+}
+html body #m .op-chips.opf button b {
+  display:block;
+  font-size:clamp(14px,4.4vw,18px);
+  font-weight:800;
+}
+html body #m .op-chips.opf button:last-child:nth-child(3n+1) {
+  grid-column:1 / -1;
+}
+html body #m .op-chips.opf button:last-child:nth-child(3n+2) {
+  grid-column:span 2;
+}
+html body #m .oi-st.oi-st2 {
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  margin-top:8px;
+}
+html body #m .oi-st b.wn {
+  color:#b45309;
 }
 html body #m .sl2.oc2 .prn {
   flex:1;
@@ -14652,9 +14679,9 @@ function opCmpList() {
   if (!$("opl")) return;
   const R = opCmpRows(), q = OPX.q.trim().toLowerCase(), n = (c) => R.filter((r) => r.c === c).length;
   const cnt = { all: R.length, sel: n("mn") + n("pl"), mn: n("mn"), pl: n("pl"), ok: n("ok"), bd: n("bd"), tn: n("tn") };
-  const ch = [["all", "Semua"], ["sel", "Selisih"], ["mn", "Minus"], ["pl", "Plus"], ["ok", "Sesuai"], ["bd", "Belum dihitung"], ["tn", "Tanpa admin"]];
+  const ch = [["all", "Semua"], ["sel", "Selisih"], ["ok", "Sesuai"], ["mn", "Minus"], ["pl", "Plus"], ["bd", "Belum dihitung"], ["tn", "Tanpa admin"]];
   const tunggu = R.filter((r) => (r.c === "mn" || r.c === "pl") && !r.mk && opTgt(r.c) && opTgt(r.c).id !== D.cg).length;
-  $("opcs").innerHTML = `<div class="op-chips opf">${ch.filter((x) => x[0] === "all" || cnt[x[0]]).map((x) => `<button class="${OPX.f === x[0] ? "on" : ""}" onclick="OPX.f='${x[0]}';opCmpList()">${x[1]} (${cnt[x[0]]})</button>`).join("")}</div>${tunggu ? `<button class="btn bt-navy" style="width:100%;margin-bottom:8px" onclick="opCmpMkAll()">📦 Pindahkan Minus & Plus ke gudangnya (${tunggu})</button>` : ""}`;
+  $("opcs").innerHTML = `<div class="op-chips opf">${ch.filter((x) => x[0] === "all" || cnt[x[0]]).map((x) => `<button class="${OPX.f === x[0] ? "on" : ""}" onclick="OPX.f='${x[0]}';opCmpList()"><span>${x[1]}</span><b>${cnt[x[0]]}</b></button>`).join("")}</div>${tunggu ? `<button class="btn bt-navy" style="width:100%;margin-bottom:8px" onclick="opCmpMkAll()">📦 Pindahkan Minus & Plus ke gudangnya (${tunggu})</button>` : ""}`;
   const L = R.filter((r) => (OPX.f === "all" || (OPX.f === "sel" ? r.c === "mn" || r.c === "pl" : r.c === OPX.f)) && (!q || mAll(r.p.nama.toLowerCase(), q) || String(r.p.kode || "").toLowerCase().includes(q)));
   $("opl").innerHTML = L.slice(0, 150).map((r) => {
     const F = (v) => esc(kkFmt(v, r.p.isi, kkU(r.p))), tg = opTgt(r.c);
@@ -14666,7 +14693,7 @@ function opCmpList() {
 function vOpnCmp() {
   const sy = opSyG(), mt = opMatch();
   setTimeout(opCmpList, 0);
-  return `<div class="card"><button class="btn bt-navy" style="width:100%" onclick="opImp()">⬆ Impor Stok Admin (Excel / CSV)</button><button class="btn oi-tpl" onclick="opTpl()">⬇ Unduh Template</button><div class="sm oi-h">Kolom: Item No., Item Description, In Stock</div>` + (sy ? `<div class="oi-st"><div><span>Baris Excel</span><b>${sy.rows.length}</b></div><div><span>Cocok</span><b class="ok">${mt.c}</b></div><div onclick="opTdk()"><span>Tidak cocok</span><b class="${mt.t ? "mn" : ""}">${mt.t}</b></div></div><div class="oi-f"><div class="sm">${esc(sy.fn || "")}<br>diimpor ${esc(fdh(sy.tgl))}${mt.t ? "<br>Ketuk Tidak cocok untuk melihat daftarnya" : ""}</div><button class="oi-del" onclick="opSyAsk()">Hapus</button></div>` : '<div class="sm" style="margin-top:8px">Belum ada stok admin. Impor file untuk melihat selisihnya.</div>') + `</div><div id="opcs"></div><input id="opq" placeholder="Cari nama atau kode barang…" value="${esc(OPX.q)}" oninput="OPX.q=this.value;opCmpList()" style="margin-bottom:10px"><div id="opl"></div>`;
+  return `<div class="card"><button class="btn bt-navy" style="width:100%" onclick="opImp()">⬆ Impor Stok Admin (Excel / CSV)</button><button class="btn oi-tpl" onclick="opTpl()">⬇ Unduh Template</button><div class="sm oi-h">Kolom: Item No., Item Description, In Stock</div>` + (sy ? `<div class="oi-st"><div><span>Baris Excel</span><b>${sy.rows.length}</b></div><div><span>Cocok</span><b class="ok">${mt.c}</b></div><div onclick="opTdk()"><span>Tidak cocok</span><b class="${mt.t ? "mn" : ""}">${mt.t}</b></div></div><div class="oi-st oi-st2"><div><span>Tanpa admin</span><b class="wn">${opCmpRows().filter((r) => r.c === "tn").length}</b></div><div><span>Total produk</span><b>${opCmpRows().length}</b></div></div><div class="oi-f"><div class="sm">${esc(sy.fn || "")}<br>diimpor ${esc(fdh(sy.tgl))}${mt.t ? "<br>Ketuk Tidak cocok untuk melihat daftarnya" : ""}</div><button class="oi-del" onclick="opSyAsk()">Hapus</button></div>` : '<div class="sm" style="margin-top:8px">Belum ada stok admin. Impor file untuk melihat selisihnya.</div>') + `</div><div id="opcs"></div><input id="opq" placeholder="Cari nama atau kode barang…" value="${esc(OPX.q)}" oninput="OPX.q=this.value;opCmpList()" style="margin-bottom:10px"><div id="opl"></div>`;
 }
 function vOpnFld() {
   const F = opF(D.cg).slice().sort((a, b) => a.tgl < b.tgl ? 1 : -1), sy = opSyG();
